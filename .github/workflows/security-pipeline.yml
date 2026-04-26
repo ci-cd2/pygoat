@@ -5,9 +5,6 @@ on:
     branches: [ "master", "main" ]
 
 jobs:
-  # ==========================================
-  # FRIEND'S JOB: SAST SCAN (SonarCloud)
-  # ==========================================
   sast_scan:
     name: SonarQube SAST
     runs-on: ubuntu-latest
@@ -18,14 +15,16 @@ jobs:
           fetch-depth: 0  
       
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # FRIEND: CHANGE THESE TWO LINES TO MATCH YOUR SONARCLOUD INFO!
+          args: >
+            -Dsonar.projectKey=PUT_YOUR_PROJECT_KEY_HERE
+            -Dsonar.organization=PUT_YOUR_ORGANIZATION_HERE
 
-  # ==========================================
-  # YOUR JOB: DAST SCAN (OWASP ZAP)
-  # ==========================================
   dast_scan:
     name: OWASP ZAP DAST
     runs-on: ubuntu-latest
@@ -36,8 +35,8 @@ jobs:
       
       - name: Build and Run PyGoat App
         run: |
-          docker-compose up -d
-          # Give the app 15 seconds to fully start before attacking
+          # Notice we removed the hyphen between docker and compose!
+          docker compose up -d
           sleep 15 
 
       - name: OWASP ZAP Baseline Scan
@@ -46,5 +45,4 @@ jobs:
           target: 'http://localhost:8000'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a'
-          # Prevent the pipeline from failing just because it found bugs
           fail_action: false 
