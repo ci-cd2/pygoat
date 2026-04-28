@@ -29,17 +29,18 @@ jobs:
   dast_scan:
     name: OWASP ZAP DAST
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
       
-      # This step fixes the "Permission Denied" error when ZAP runs
       - name: Fix Directory Permissions
         run: sudo chmod -R a+w .
 
       - name: Build and Run PyGoat App
         run: |
-          # Bypassing the broken Dockerfile by downloading the pre-built app
           docker run -d -p 8000:8000 pygoat/pygoat:latest
           sleep 15 
 
